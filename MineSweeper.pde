@@ -1,6 +1,7 @@
 
 PImage flag;
 PImage bomb;
+PImage boom;
 PImage cell;
 PImage hiddenCell;
 PImage[] numbers;
@@ -9,7 +10,7 @@ PFont f;
 final int CELL_SIZE = 30;
 final int NB_ROW = 20;
 final int NB_COL = 20;
-int nbBombs = 25;
+int nbBombs = 20;
 int bombsRemaining = nbBombs;
 char[][] grid;
 boolean[][] revealed;
@@ -18,7 +19,7 @@ boolean over = false;
 String message = "OOF";
 
 void setup() {
-  size(600,600);
+  size(600,635); //x y
   revealed = new boolean[NB_ROW][NB_COL];
   flagged  = new boolean[NB_ROW][NB_COL];
   grid = new char[NB_ROW][NB_COL];
@@ -27,11 +28,12 @@ void setup() {
   for(int i = 0; i < numbers.length; i++)
     numbers[i] = loadImage((i+1)+".png");
     
-   f = createFont("Comic Sans MS",32,true);
+   f = createFont("Arial",32,true);
   
   hiddenCell = loadImage("hiddenCell.png");
   cell = loadImage("cell.png");
   bomb = loadImage("bomb.png");
+  boom = loadImage("boom.png");
   flag = loadImage("flag.png");
   
   fillGrid();
@@ -75,17 +77,23 @@ void fillGrid() {
 }
 
 void mouseClicked() {
-  int row = mouseX/CELL_SIZE;
-  int col = mouseY/CELL_SIZE;
+  int row = (mouseX)/CELL_SIZE;
+  int col = (mouseY-30)/CELL_SIZE;
   if(mouseButton == LEFT) {
     if(!over) {
       if(grid[row][col] == ' ') fill(row,col);
-      else if(grid[row][col] == 'B') over = true;
+      else if(grid[row][col] == 'B') {
+        over = true;
+        grid[row][col] = 'b';
+      }
       else revealed[row][col] = true;
     }
       
-  } else if (mouseButton == RIGHT)
+  } else if (mouseButton == RIGHT) {
     flagged[row][col] = !flagged[row][col];
+    bombsRemaining--;
+  }
+  
   
   if(hasWon()) {
     message = "WOW!";
@@ -95,20 +103,24 @@ void mouseClicked() {
 }
 
 void draw() {
+  background(0xc0c0c0);
   for(int i = 0; i < NB_ROW; i ++) {
     for(int j = 0; j < NB_COL; j++) {
       if(over || revealed[i][j])
-        image(correspondingImage(grid[i][j]), i*CELL_SIZE, j*CELL_SIZE);
+        image(correspondingImage(grid[i][j]), i*CELL_SIZE, j*CELL_SIZE+30);
       else
-        if(flagged[i][j]) image(correspondingImage('F'), i*CELL_SIZE, j*CELL_SIZE);
-        else image(hiddenCell, i*CELL_SIZE, j*CELL_SIZE);
+        if(flagged[i][j]) image(correspondingImage('F'), i*CELL_SIZE, j*CELL_SIZE+30);
+        else image(hiddenCell, i*CELL_SIZE, j*CELL_SIZE+30);
     }
   }
+  fill(0); 
+  textAlign(CENTER);
+  textFont(f,18);
+  text("bombs remaining : " + String.format("%2d", bombsRemaining), 635/2, 22);
   if(over) {
     textFont(f,72);
     fill(color(255,0,0)); 
-    textAlign(CENTER);
-    text(message, 300/2,300/2);
+    text(message, 635/2, 600/2+30);
   }
 }
 
@@ -116,14 +128,15 @@ boolean hasWon() {
   int n = 0;
   for(int i = 0; i < NB_ROW; i++) 
     for(int j = 0; j < NB_COL; j++) {
-      if(grid[i][j]=='B'&&flagged[i][j]) n++;
+      if(revealed[i][j]) n++;
     }
-  return n == nbBombs;
+  return n == NB_COL*NB_ROW-nbBombs;
 }
 
 PImage correspondingImage(char c) {
   switch(c) {
     case 'B' : return bomb;
+    case 'b' : return boom;
     case 'F' : return flag;
     case '1' : return numbers[0];
     case '2' : return numbers[1];
