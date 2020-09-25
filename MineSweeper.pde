@@ -16,7 +16,7 @@ char[][] grid;
 boolean[][] revealed;
 boolean[][] flagged;
 boolean over = false;
-String message = "OOF";
+String message = "lost";
 
 void setup() {
   size(600,635); //x y
@@ -28,7 +28,7 @@ void setup() {
   for(int i = 0; i < numbers.length; i++)
     numbers[i] = loadImage((i+1)+".png");
     
-   f = createFont("Arial",32,true);
+   f = createFont("Noto Sans Condensed Bold",32,true);
   
   hiddenCell = loadImage("hiddenCell.png");
   cell = loadImage("cell.png");
@@ -50,6 +50,7 @@ void fillGrid() {
   for(int i = 0; i < NB_ROW; i++) {
     for(int j = 0; j < NB_COL; j++) {
       revealed[i][j] = false;
+      flagged[i][j] = false;
       grid[i][j] = ' ';
     }
   }
@@ -80,7 +81,7 @@ void mouseClicked() {
   int row = (mouseX)/CELL_SIZE;
   int col = (mouseY-30)/CELL_SIZE;
   if(mouseButton == LEFT) {
-    if(!over) {
+    if(!over && !flagged[row][col]) {
       if(grid[row][col] == ' ') fill(row,col);
       else if(grid[row][col] == 'B') {
         over = true;
@@ -96,7 +97,7 @@ void mouseClicked() {
   
   
   if(hasWon()) {
-    message = "WOW!";
+    message = "won";
     over = true;
   }
   redraw();
@@ -118,9 +119,13 @@ void draw() {
   textFont(f,18);
   text("bombs remaining : " + String.format("%2d", bombsRemaining), 635/2, 22);
   if(over) {
-    textFont(f,72);
-    fill(color(255,0,0)); 
-    text(message, 635/2, 600/2+30);
+    stroke(#808080);
+    strokeWeight(5);
+    fill(#c0c0c0);
+    textFont(f,48);
+    rect(210 , 270, 180, 55, 7);
+    fill(0);
+    text("You " + message, 600/2,635/2);
   }
 }
 
@@ -153,7 +158,7 @@ PImage correspondingImage(char c) {
 
 
 int bombsAround(int i, int j) {
-  int n = 0;
+  int n = 0; 
     if(i>0 && grid[i-1][j] == 'B') n++;
     if(i<NB_COL-1 && grid[i+1][j] == 'B') n++;
     if(j > 0 && grid[i][j-1] == 'B') n++;
