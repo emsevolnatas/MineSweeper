@@ -90,9 +90,14 @@ void mouseClicked() {
       else revealed[row][col] = true;
     }
       
-  } else if (mouseButton == RIGHT) {
+  } else if (mouseButton == RIGHT && !revealed[row][col]) {
+    if(!flagged[row][col])  
+      bombsRemaining--;
+    else
+      bombsRemaining++;
+      
     flagged[row][col] = !flagged[row][col];
-    bombsRemaining--;
+
   }
   
   
